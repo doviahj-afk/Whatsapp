@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}WhatsClone{% endblock %}
+{% block content %}
+<div class="app" id="app"
+     data-user-id="{{ current_user.id }}"
+     data-username="{{ current_user.username }}">
+
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span class="brand">WhatsClone</span>
+      <a href="{{ url_for('logout') }}" class="logout-link" title="Log out">⏻</a>
+    </div>
+
+    <div class="new-group">
+      <button id="newGroupBtn">+ New Group</button>
+    </div>
+
+    <div class="conversation-list">
+      <div class="list-label">Groups</div>
+      {% for g in groups %}
+        <div class="conv-item" data-type="group" data-id="{{ g.id }}" data-name="{{ g.name }}">
+          <div class="avatar group-avatar">{{ g.name[0]|upper }}</div>
+          <div class="conv-meta">
+            <div class="conv-name">{{ g.name }}</div>
+            <div class="conv-sub">{{ g.members|length }} members</div>
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="list-label">Contacts</div>
+      {% for c in contacts %}
+        <div class="conv-item" data-type="dm" data-id="{{ c.id }}" data-name="{{ c.username }}">
+          <div class="avatar">{{ c.username[0]|upper }}</div>
+          <div class="conv-meta">
+            <div class="conv-name">{{ c.username }}</div>
+            <div class="conv-sub status-{{ c.id }}">
+              {{ "online" if c.is_online else "offline" }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </aside>
+
+  <main class="chat-panel">
+    <div class="chat-empty" id="chatEmpty">
+      <p>Select a contact or group to start chatting</p>
+    </div>
+
+    <div class="chat-active" id="chatActive" style="display:none;">
+      <div class="chat-header">
+        <div class="avatar" id="chatAvatar">?</div>
+        <div>
+          <div class="chat-title" id="chatTitle"></div>
+          <div class="chat-subtitle" id="chatSubtitle"></div>
+        </div>
+      </div>
+
+      <div class="messages" id="messages"></div>
+
+      <div class="typing-indicator" id="typingIndicator"></div>
+
+      <form class="composer" id="composerForm">
+        <label class="attach-btn" for="fileInput">📎</label>
+        <input type="file" id="fileInput" hidden>
+        <input type="text" id="messageInput" placeholder="Type a message" autocomplete="off">
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="groupModal" style="display:none;">
+  <div class="modal-card">
+    <h3>New Group</h3>
+    <input type="text" id="groupNameInput" placeholder="Group name">
+    <div class="member-picker" id="memberPicker">
+      {% for c in contacts %}
+        <label class="member-option">
+          <input type="checkbox" value="{{ c.id }}"> {{ c.username }}
+        </label>
+      {% endfor %}
+    </div>
+    <div class="modal-actions">
+      <button id="cancelGroupBtn" type="button">Cancel</button>
+      <button id="createGroupBtn" type="button">Create</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}
